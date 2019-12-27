@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -18,11 +19,6 @@ var (
 	Database = "mgo"
 	Collection = "posts"
 	Coll = Session.DB(Database).C(Collection)
-	posts = &Posts{
-		Title:   "Posts - title",
-		Content: "Posts - content",
-		Date:    time.Now(),
-	}
 )
 
 // Drop Database
@@ -104,7 +100,7 @@ func TestUpsert() {
 	}
 }
 
-//选择文档
+//查询文档
 func TestSelect(){
 	fmt.Println("Test Select in Mongo DB -->")
 	var result Posts
@@ -141,6 +137,24 @@ func TestAggregate(){
 	}
 	fmt.Println("find TestAggregate result:", result)
 }
+
+//保存json到mongo
+func saveJsonToDB(){
+	var f interface{}
+	j:=[]byte(`{"posts": {
+		"title": "post1",
+		"content": "post1-content"
+	}
+}`)
+	if err:=json.Unmarshal(j,&f);err!=nil{
+		fmt.Println(err)
+	}
+	fmt.Printf("%v",&f)
+	if err:=Coll.Insert(&f);err!=nil{
+		fmt.Println(err)
+	}
+
+}
 func main(){
 	TestInsert()
 	TestUpdate()
@@ -149,6 +163,8 @@ func main(){
 	TestAggregate()
 	TestMultipleInsert()
 	TestBulkInsert()
+	saveJsonToDB()
 	defer Session.Close()
 }
+
 
